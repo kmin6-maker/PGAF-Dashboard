@@ -80,6 +80,9 @@ export const fetchGoogleSheetData = async (sheetUrl) => {
         leadPGAF: row["Nice. Open to leading something at PGAF?"] || row["Lead PGAF?"] || "",
         skills: row["What would you bring to a team? Pick top 3."] || row["Skills"] || "",
         hours: row["Real talk - how much time per month?"] || row["Hours"] || "",
+        easier: row["What would make it easier to get involved?"] || "",
+        ambassadorType: row["ambassador_type"] || "",
+        donorStatus: row["donor_status"] || "",
         raw: row
       };
     });
