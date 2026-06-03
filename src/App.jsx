@@ -1,19 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import Directory from './components/Directory';
-import { LayoutDashboard, Users, Loader2, User, Menu } from 'lucide-react';
+import WelcomeScreen from './components/WelcomeScreen';
+import { LayoutDashboard, Users, Loader2, Menu } from 'lucide-react';
 import { fetchGoogleSheetData } from './utils/excelParser';
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1HsjwyXSfkf0EtJCZkYI9ECQb59GyeMwxKpoMDVH1OaQ/edit?usp=sharing";
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('pgaf_auth') === 'true';
+  });
+  
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleLogin = () => {
+    sessionStorage.setItem('pgaf_auth', 'true');
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('pgaf_auth');
+    setIsAuthenticated(false);
+    setData(null); // Clear data from memory
+  };
+
+  // Only fetch data if authenticated
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const loadData = async () => {
       try {
         setLoading(true);
@@ -27,7 +46,11 @@ function App() {
     };
     
     loadData();
-  }, []);
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <WelcomeScreen onLogin={handleLogin} />;
+  }
 
   return (
     <div className="app-layout">
@@ -68,6 +91,9 @@ function App() {
           <div className="user-profile">
             <span>Leadership Dashboard</span>
             <div className="avatar">L</div>
+            <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginLeft: '1rem' }} onClick={handleLogout}>
+              Lock
+            </button>
           </div>
         </header>
 
