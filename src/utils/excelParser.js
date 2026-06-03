@@ -27,6 +27,8 @@ export const parseExcelFile = (file) => {
             tenure: row["How many years were you part of the P&G family?"] || row["Tenure"] || "",
             generation: row["Which generation do you belong to?"] || row["Generation"] || "",
             leadPGAF: row["Nice. Open to leading something at PGAF?"] || row["Lead PGAF?"] || "",
+            skills: row["What would you bring to a team? Pick top 3."] || row["Skills"] || "",
+            hours: row["Real talk - how much time per month?"] || row["Hours"] || "",
             // Store raw row for backup or full search
             raw: row
           };

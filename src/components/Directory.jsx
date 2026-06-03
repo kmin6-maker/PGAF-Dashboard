@@ -1,70 +1,189 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Mail, MapPin, Briefcase } from 'lucide-react';
+import { Search, Filter, Mail, MapPin, Briefcase, SlidersHorizontal } from 'lucide-react';
 
 const Directory = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterFunction, setFilterFunction] = useState('');
+  
+  // Smart Search Filters
+  const [filters, setFilters] = useState({
+    function: '',
+    generation: '',
+    status: '',
+    leadPGAF: '',
+    skill: '',
+    hours: ''
+  });
 
-  // Extract unique functions for the filter dropdown
-  const uniqueFunctions = useMemo(() => {
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Extract unique options for dropdowns
+  const options = useMemo(() => {
     const fns = new Set();
+    const gens = new Set();
+    const statuses = new Set();
+    const leads = new Set();
+    const skills = new Set();
+    const hours = new Set();
+
     data.forEach(item => {
-      if (item.function) {
-        fns.add(item.function.split('(')[0].trim()); // simplify name
+      if (item.function) fns.add(item.function.split('(')[0].trim());
+      if (item.generation) gens.add(item.generation);
+      if (item.status) statuses.add(item.status);
+      if (item.leadPGAF) leads.add(item.leadPGAF);
+      if (item.hours) hours.add(item.hours);
+      
+      if (item.skills) {
+        item.skills.split(',').forEach(skill => {
+          skills.add(skill.trim());
+        });
       }
     });
-    return Array.from(fns).sort();
+
+    return {
+      functions: Array.from(fns).sort(),
+      generations: Array.from(gens).sort(),
+      statuses: Array.from(statuses).sort(),
+      leads: Array.from(leads).sort(),
+      skills: Array.from(skills).sort(),
+      hours: Array.from(hours).sort()
+    };
   }, [data]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   const filteredData = useMemo(() => {
     return data.filter(item => {
+      // 1. Text Search
       const matchesSearch = 
         (item.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.email || '').toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesFunction = filterFunction === '' || (item.function || '').includes(filterFunction);
+      if (!matchesSearch) return false;
+
+      // 2. Smart Filters (AND logic)
+      if (filters.function && !(item.function || '').includes(filters.function)) return false;
+      if (filters.generation && item.generation !== filters.generation) return false;
+      if (filters.status && item.status !== filters.status) return false;
+      if (filters.leadPGAF && item.leadPGAF !== filters.leadPGAF) return false;
+      if (filters.hours && item.hours !== filters.hours) return false;
       
-      return matchesSearch && matchesFunction;
+      if (filters.skill) {
+        if (!(item.skills || '').includes(filters.skill)) return false;
+      }
+
+      return true;
     });
-  }, [data, searchTerm, filterFunction]);
+  }, [data, searchTerm, filters]);
+
+  const activeFilterCount = Object.values(filters).filter(v => v !== '').length;
 
   return (
     <div className="glass-panel animate-fade-in directory-container">
       <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2>Ambassador Directory</h2>
-          <p>Find and connect with P&G Ambassadors ({filteredData.length} results)</p>
+          <h2>Smart Search Directory</h2>
+          <p>Find and connect with P&G Ambassadors ({filteredData.length} matches)</p>
         </div>
       </div>
 
-      <div className="search-bar-container">
+      {/* Main Search Bar */}
+      <div className="search-bar-container" style={{ marginBottom: '1rem' }}>
         <div className="search-input-wrapper">
           <Search className="search-icon" />
           <input 
             type="text" 
             className="input-field" 
-            placeholder="Search by name, location, or email..." 
+            placeholder="Quick search by name, location, or email..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Filter size={18} color="var(--text-muted)" />
-          <select 
-            className="input-field" 
-            style={{ minWidth: '200px' }}
-            value={filterFunction}
-            onChange={(e) => setFilterFunction(e.target.value)}
-          >
-            <option value="">All Functions</option>
-            {uniqueFunctions.map(fn => (
-              <option key={fn} value={fn}>{fn}</option>
-            ))}
-          </select>
-        </div>
+        <button 
+          className={`btn ${showFilters || activeFilterCount > 0 ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <SlidersHorizontal size={16} />
+          Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+        </button>
       </div>
+
+      {/* Expandable Smart Filters Panel */}
+      {showFilters && (
+        <div style={{
+          backgroundColor: 'rgba(255,255,255,0.6)',
+          padding: '1.5rem',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '1.5rem',
+          border: '1px solid var(--panel-border)',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem'
+        }}>
+          <div className="input-group">
+            <label className="input-label">Function</label>
+            <select className="input-field" value={filters.function} onChange={(e) => handleFilterChange('function', e.target.value)}>
+              <option value="">All Functions</option>
+              {options.functions.map(o => o && <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          
+          <div className="input-group">
+            <label className="input-label">Generation</label>
+            <select className="input-field" value={filters.generation} onChange={(e) => handleFilterChange('generation', e.target.value)}>
+              <option value="">All Generations</option>
+              {options.generations.map(o => o && <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Skill</label>
+            <select className="input-field" value={filters.skill} onChange={(e) => handleFilterChange('skill', e.target.value)}>
+              <option value="">All Skills</option>
+              {options.skills.map(o => o && <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Pipeline (Lead PGAF)</label>
+            <select className="input-field" value={filters.leadPGAF} onChange={(e) => handleFilterChange('leadPGAF', e.target.value)}>
+              <option value="">All Pipeline</option>
+              {options.leads.map(o => o && <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Hours / Month</label>
+            <select className="input-field" value={filters.hours} onChange={(e) => handleFilterChange('hours', e.target.value)}>
+              <option value="">All Hours</option>
+              {options.hours.map(o => o && <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">Status</label>
+            <select className="input-field" value={filters.status} onChange={(e) => handleFilterChange('status', e.target.value)}>
+              <option value="">All Statuses</option>
+              {options.statuses.map(o => o && <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          
+          {activeFilterCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button 
+                className="btn btn-secondary" 
+                style={{ width: '100%' }}
+                onClick={() => setFilters({function: '', generation: '', status: '', leadPGAF: '', skill: '', hours: ''})}
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="table-wrapper">
         <table className="data-table">
@@ -103,10 +222,10 @@ const Directory = ({ data }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
                       <Briefcase size={14} color="var(--text-muted)" />
                       <span style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {person.function.split('(')[0].trim() || 'Unknown'}
+                        {person.function ? person.function.split('(')[0].trim() : 'Unknown'}
                       </span>
                     </div>
-                    <span className="badge">{person.tenure.split('(')[0].trim() || 'Unknown'}</span>
+                    <span className="badge">{person.tenure ? person.tenure.split('(')[0].trim() : 'Unknown'}</span>
                   </td>
                   <td>
                     <div style={{ fontSize: '0.9rem' }}>
@@ -123,7 +242,7 @@ const Directory = ({ data }) => {
             ) : (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                  No ambassadors found matching your criteria.
+                  No ambassadors found matching your smart search criteria.
                 </td>
               </tr>
             )}
