@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import Directory from './components/Directory';
-import { LayoutDashboard, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Users, Loader2, User, Menu } from 'lucide-react';
 import { fetchGoogleSheetData } from './utils/excelParser';
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1HsjwyXSfkf0EtJCZkYI9ECQb59GyeMwxKpoMDVH1OaQ/edit?usp=sharing";
@@ -10,6 +10,8 @@ function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -28,34 +30,66 @@ function App() {
   }, []);
 
   return (
-    <div className="app-container">
-      <header className="header">
-        <div className="logo">
-          <div className="logo-icon">
-            <LayoutDashboard size={24} />
+    <div className="app-layout">
+      {/* Sidebar Navigation */}
+      <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+        <div className="sidebar-logo">
+          <div className="icon">
+            <LayoutDashboard size={18} />
           </div>
-          P&G Ambassador Network
+          P&G Network
         </div>
-      </header>
 
-      <main>
-        {loading ? (
-          <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
-            <Loader2 className="upload-icon" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', width: 48, height: 48, marginBottom: '1rem' }} />
-            <h3>Syncing with Google Sheets...</h3>
-            <p>Fetching the latest ambassador data</p>
+        <nav className="nav-menu">
+          <div 
+            className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }}
+          >
+            <LayoutDashboard size={18} />
+            <span>Overview</span>
           </div>
-        ) : error ? (
-          <div className="glass-panel" style={{ color: 'var(--danger)', textAlign: 'center', padding: '3rem' }}>
-            <h3>Error</h3>
-            <p>{error}</p>
+          <div 
+            className={`nav-item ${activeTab === 'directory' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('directory'); setMobileMenuOpen(false); }}
+          >
+            <Users size={18} />
+            <span>Ambassador Directory</span>
           </div>
-        ) : data ? (
-          <div className="animate-fade-in">
-            <Dashboard data={data} />
-            <Directory data={data} />
+        </nav>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="main-content">
+        <header className="topbar">
+          <button className="btn btn-secondary mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ display: 'none', marginRight: 'auto' }}>
+            <Menu size={20} />
+          </button>
+          
+          <div className="user-profile">
+            <span>Leadership Dashboard</span>
+            <div className="avatar">L</div>
           </div>
-        ) : null}
+        </header>
+
+        <div className="content-wrapper">
+          {loading ? (
+            <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+              <Loader2 className="upload-icon" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', width: 48, height: 48, marginBottom: '1rem' }} />
+              <h3>Syncing with Database...</h3>
+              <p>Fetching the latest ambassador data securely</p>
+            </div>
+          ) : error ? (
+            <div className="glass-panel" style={{ color: 'var(--danger)', textAlign: 'center', padding: '3rem' }}>
+              <h3>Error</h3>
+              <p>{error}</p>
+            </div>
+          ) : data ? (
+            <div className="animate-fade-in">
+              {activeTab === 'overview' && <Dashboard data={data} />}
+              {activeTab === 'directory' && <Directory data={data} />}
+            </div>
+          ) : null}
+        </div>
       </main>
     </div>
   );

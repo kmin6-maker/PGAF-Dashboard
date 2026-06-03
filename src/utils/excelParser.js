@@ -83,6 +83,7 @@ export const fetchGoogleSheetData = async (sheetUrl) => {
         easier: row["What would make it easier to get involved?"] || "",
         ambassadorType: row["ambassador_type"] || "",
         donorStatus: row["donor_status"] || "",
+        submittedAt: row["Submitted At"] || "",
         raw: row
       };
     });
