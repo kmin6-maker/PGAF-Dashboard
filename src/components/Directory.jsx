@@ -1,17 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, Mail, MapPin, Briefcase, SlidersHorizontal } from 'lucide-react';
+import MultiSelect from './MultiSelect';
 
 const Directory = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Smart Search Filters
+  // Smart Search Filters (Arrays for Multi-Select)
   const [filters, setFilters] = useState({
-    function: '',
-    generation: '',
-    status: '',
-    leadPGAF: '',
-    skill: '',
-    hours: ''
+    function: [],
+    generation: [],
+    status: [],
+    leadPGAF: [],
+    skill: [],
+    hours: []
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -63,22 +64,22 @@ const Directory = ({ data }) => {
       
       if (!matchesSearch) return false;
 
-      // 2. Smart Filters (AND logic)
-      if (filters.function && !(item.function || '').includes(filters.function)) return false;
-      if (filters.generation && item.generation !== filters.generation) return false;
-      if (filters.status && item.status !== filters.status) return false;
-      if (filters.leadPGAF && item.leadPGAF !== filters.leadPGAF) return false;
-      if (filters.hours && item.hours !== filters.hours) return false;
+      // 2. Smart Filters (AND across categories, OR within category)
+      if (filters.function.length > 0 && !filters.function.some(f => (item.function || '').includes(f))) return false;
+      if (filters.generation.length > 0 && !filters.generation.includes(item.generation)) return false;
+      if (filters.status.length > 0 && !filters.status.includes(item.status)) return false;
+      if (filters.leadPGAF.length > 0 && !filters.leadPGAF.includes(item.leadPGAF)) return false;
+      if (filters.hours.length > 0 && !filters.hours.includes(item.hours)) return false;
       
-      if (filters.skill) {
-        if (!(item.skills || '').includes(filters.skill)) return false;
+      if (filters.skill.length > 0) {
+        if (!filters.skill.some(s => (item.skills || '').includes(s))) return false;
       }
 
       return true;
     });
   }, [data, searchTerm, filters]);
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== '').length;
+  const activeFilterCount = Object.values(filters).reduce((acc, curr) => acc + curr.length, 0);
 
   return (
     <div className="glass-panel animate-fade-in directory-container">
@@ -125,58 +126,70 @@ const Directory = ({ data }) => {
         }}>
           <div className="input-group">
             <label className="input-label">Function</label>
-            <select className="input-field" value={filters.function} onChange={(e) => handleFilterChange('function', e.target.value)}>
-              <option value="">All Functions</option>
-              {options.functions.map(o => o && <option key={o} value={o}>{o}</option>)}
-            </select>
+            <MultiSelect 
+              options={options.functions} 
+              selectedValues={filters.function} 
+              onChange={(val) => handleFilterChange('function', val)} 
+              placeholder="All Functions" 
+            />
           </div>
           
           <div className="input-group">
             <label className="input-label">Generation</label>
-            <select className="input-field" value={filters.generation} onChange={(e) => handleFilterChange('generation', e.target.value)}>
-              <option value="">All Generations</option>
-              {options.generations.map(o => o && <option key={o} value={o}>{o}</option>)}
-            </select>
+            <MultiSelect 
+              options={options.generations} 
+              selectedValues={filters.generation} 
+              onChange={(val) => handleFilterChange('generation', val)} 
+              placeholder="All Generations" 
+            />
           </div>
 
           <div className="input-group">
             <label className="input-label">Skill</label>
-            <select className="input-field" value={filters.skill} onChange={(e) => handleFilterChange('skill', e.target.value)}>
-              <option value="">All Skills</option>
-              {options.skills.map(o => o && <option key={o} value={o}>{o}</option>)}
-            </select>
+            <MultiSelect 
+              options={options.skills} 
+              selectedValues={filters.skill} 
+              onChange={(val) => handleFilterChange('skill', val)} 
+              placeholder="All Skills" 
+            />
           </div>
 
           <div className="input-group">
             <label className="input-label">Pipeline (Lead PGAF)</label>
-            <select className="input-field" value={filters.leadPGAF} onChange={(e) => handleFilterChange('leadPGAF', e.target.value)}>
-              <option value="">All Pipeline</option>
-              {options.leads.map(o => o && <option key={o} value={o}>{o}</option>)}
-            </select>
+            <MultiSelect 
+              options={options.leads} 
+              selectedValues={filters.leadPGAF} 
+              onChange={(val) => handleFilterChange('leadPGAF', val)} 
+              placeholder="All Pipeline" 
+            />
           </div>
 
           <div className="input-group">
             <label className="input-label">Hours / Month</label>
-            <select className="input-field" value={filters.hours} onChange={(e) => handleFilterChange('hours', e.target.value)}>
-              <option value="">All Hours</option>
-              {options.hours.map(o => o && <option key={o} value={o}>{o}</option>)}
-            </select>
+            <MultiSelect 
+              options={options.hours} 
+              selectedValues={filters.hours} 
+              onChange={(val) => handleFilterChange('hours', val)} 
+              placeholder="All Hours" 
+            />
           </div>
 
           <div className="input-group">
             <label className="input-label">Status</label>
-            <select className="input-field" value={filters.status} onChange={(e) => handleFilterChange('status', e.target.value)}>
-              <option value="">All Statuses</option>
-              {options.statuses.map(o => o && <option key={o} value={o}>{o}</option>)}
-            </select>
+            <MultiSelect 
+              options={options.statuses} 
+              selectedValues={filters.status} 
+              onChange={(val) => handleFilterChange('status', val)} 
+              placeholder="All Statuses" 
+            />
           </div>
           
           {activeFilterCount > 0 && (
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', marginBottom: '1rem' }}>
               <button 
                 className="btn btn-secondary" 
                 style={{ width: '100%' }}
-                onClick={() => setFilters({function: '', generation: '', status: '', leadPGAF: '', skill: '', hours: ''})}
+                onClick={() => setFilters({function: [], generation: [], status: [], leadPGAF: [], skill: [], hours: []})}
               >
                 Clear Filters
               </button>
