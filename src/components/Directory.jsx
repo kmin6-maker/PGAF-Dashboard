@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Mail, MapPin, Briefcase, SlidersHorizontal, Sparkles } from 'lucide-react';
-import SmartAssistant from './SmartAssistant';
+import { Search, Filter, Mail, MapPin, Briefcase, SlidersHorizontal } from 'lucide-react';
 
 const Directory = ({ data }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,10 +15,6 @@ const Directory = ({ data }) => {
   });
 
   const [showFilters, setShowFilters] = useState(false);
-  
-  // AI Smart Search State
-  const [aiResults, setAiResults] = useState(null);
-  const [aiKeywords, setAiKeywords] = useState(null);
 
   // Extract unique options for dropdowns
   const options = useMemo(() => {
@@ -59,10 +54,7 @@ const Directory = ({ data }) => {
   };
 
   const filteredData = useMemo(() => {
-    // If AI has provided results, use them as the base dataset, otherwise use all data
-    const baseData = aiResults !== null ? aiResults : data;
-
-    return baseData.filter(item => {
+    return data.filter(item => {
       // 1. Text Search
       const matchesSearch = 
         (item.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,28 +87,6 @@ const Directory = ({ data }) => {
           <h2>Smart Search Directory</h2>
           <p>Find and connect with P&G Ambassadors ({filteredData.length} matches)</p>
         </div>
-      </div>
-
-      {/* AI Smart Search Assistant */}
-      <div style={{ marginBottom: '2rem' }}>
-        <SmartAssistant 
-          data={data} 
-          onSearchResults={(results, keywords) => {
-            setAiResults(results);
-            setAiKeywords(keywords);
-          }} 
-        />
-        
-        {aiKeywords && (
-          <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', fontSize: '0.85rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>AI extracted keywords:</span>
-            {aiKeywords.map(kw => (
-              <span key={kw} className="badge" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                <Sparkles size={10} /> {kw}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Main Search Bar */}
