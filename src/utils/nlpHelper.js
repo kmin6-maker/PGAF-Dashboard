@@ -15,8 +15,21 @@ export const extractKeywords = (sentence) => {
     .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '')
     .split(/\s+/);
 
-  // Filter out stop words
-  const keywords = words.filter(word => word.length > 0 && !stopWords.has(word));
+  // Stemming / Synonyms mapping
+  const synonyms = {
+    'retired': 'retire',
+    'retirement': 'retire',
+    'working': 'work',
+    'worker': 'work',
+    'analytics': 'analysis',
+    'marketer': 'marketing'
+  };
+
+  // Filter out stop words and apply stemming
+  const keywords = words
+    .filter(word => word.length > 0 && !stopWords.has(word))
+    .map(word => synonyms[word] || word);
   
-  return keywords;
+  // Deduplicate keywords
+  return [...new Set(keywords)];
 };

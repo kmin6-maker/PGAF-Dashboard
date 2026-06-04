@@ -52,7 +52,7 @@ const SmartAssistant = ({ data, onSearchResults }) => {
         let matchedItems = data;
         const searchOptions = {
           includeScore: true,
-          threshold: 0.15, // Stricter fuzzy matching
+          threshold: 0.2, // Balanced fuzzy matching with Stemming
           keys: [
             { name: 'name', weight: 1 },
             { name: 'location', weight: 1.5 },
