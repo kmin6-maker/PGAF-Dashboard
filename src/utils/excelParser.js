@@ -207,4 +207,5 @@ export const fetchGoogleSheetData = async (sheetUrl) => {
     console.error("Error fetching Google Sheet:", error);
     throw error;
   }
-};Add derived fields and SN lookup
+};
+
