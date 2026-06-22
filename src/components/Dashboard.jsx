@@ -309,4 +309,3 @@ const Dashboard = ({ data }) => {
 };
 
 export default Dashboard;
-Fix timeline, remove donors, add charts
