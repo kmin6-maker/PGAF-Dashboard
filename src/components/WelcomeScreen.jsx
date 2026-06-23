@@ -28,8 +28,8 @@ const WelcomeScreen = ({ onLogin }) => {
           <div className="login-icon">
             <ShieldCheck size={32} color="white" />
           </div>
-          <h1>P&G Ambassador Network</h1>
-          <p>Secure Leadership Dashboard</p>
+          <h1>PGAF Ambassadors Volunteer Management Platform</h1>
+          <p>PGAF AVMP Dashboard</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
