@@ -89,7 +89,7 @@ function App() {
           </button>
           
           <div className="user-profile">
-            <span>Leadership Dashboard</span>
+            <span>Dashboard</span>
             <div className="avatar">L</div>
             <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginLeft: '1rem' }} onClick={handleLogout}>
               Lock
