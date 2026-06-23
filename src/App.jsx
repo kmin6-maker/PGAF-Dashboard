@@ -60,7 +60,7 @@ function App() {
           <div className="icon">
             <LayoutDashboard size={18} />
           </div>
-          P&G Network
+          PGAF AVMP
         </div>
 
         <nav className="nav-menu">
